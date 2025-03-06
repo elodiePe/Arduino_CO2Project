@@ -17,7 +17,7 @@ Adafruit_SGP30 sgp;
 // définir Matrice LED 8x8
 #define NUM_LEDS 64      // Nombre de LEDs (8x8 = 64 LEDs)
 #define DATA_PIN 22      // Pin connecté au DIN de la matrice WS2812B
-#define BRIGHTNESS 50    // Luminosité (0-255)
+#define BRIGHTNESS 10    // Luminosité (0-255)
 #define MATRIX_WIDTH 8   // Largeur de la matrice (8 colonnes)
 #define MATRIX_HEIGHT 8  // Hauteur de la matrice (8 lignes)
 
@@ -143,26 +143,29 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print(temperature);
     lcd.print(" C");
-    if (temperature < 10 && sgp.eCO2 < 1000) {
+    if (temperature < 10 && sgp.eCO2 < 400) {
       drawSadSmiley();
     };
-    if (temperature < 20 && temperature > 10 && sgp.eCO2 < 1000) {
+    if (temperature < 20 && temperature > 10 && sgp.eCO2 < 400) {
       drawNeutralSmiley();
     }
-    if (temperature > 20 && sgp.eCO2 < 1000) {
+    if (temperature > 20 && sgp.eCO2 < 400) {
       drawHappySmiley();
     }
     if (temperature == 20) {
       drawHappySmiley;
     }
 
-  } else if (pressed == 1 && pirVal == HIGH) {
+  } else if (pressed == 1 && pirVal == HIGH ) {
     lcd.setCursor(0, 0);
     lcd.print("Humidite: ");
     lcd.setCursor(0, 1);
     lcd.print(humidity);
     lcd.print(" %");
+    if (sgp.eCO2 < 400) {
+  drawHumidityDisplay(humidity); // Afficher l'humidité sur le panneau LED
 
+    }
   } else if (pressed == 2 && pirVal == HIGH) {
     lcd.setCursor(0, 0);
     lcd.print("CO2: ");
@@ -178,9 +181,8 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.clear();
     lcd.print("heure et date");
-    turnOffLeds();
   }
-  if (sgp.eCO2 > 1000) {
+  if (sgp.eCO2 > 400) {
     drawWarningSign();
     // Si le temps écoulé depuis la dernière note est supérieur à la durée de la note actuelle
     if (currentMillis - previousMelodyMillis >= interval && !isPlaying) {
@@ -211,7 +213,7 @@ void loop() {
       }
     }
   }
-  if (pirVal == LOW) {
+  if (pirVal == LOW && sgp.eCO2 <400) {
     turnOffLeds();
   }
   lastButtonState = currentButtonState;
@@ -291,3 +293,21 @@ void turnOffLeds() {
   fill_solid(leds, NUM_LEDS, CRGB::Black);
   FastLED.show();
 }
+void drawHumidityDisplay(float humidity) {
+  // Limiter l'humidité à 0% - 100% pour éviter des valeurs invalides
+  if (humidity < 0) humidity = 0;
+  if (humidity > 100) humidity = 100;
+
+  // Calculer le nombre de LEDs à allumer en fonction du taux d'humidité
+  int ledsToLightUp = map(humidity, 0, 100, 0, NUM_LEDS); // Calcul du nombre de LEDs allumées
+
+  fill_solid(leds, NUM_LEDS, CRGB::Black); // Éteindre toutes les LEDs au départ
+
+  // Allumer les LEDs proportionnellement à l'humidité
+  for (int i = 0; i < ledsToLightUp; i++) {
+    leds[i] = CRGB::Blue;  // Allumer la LED en bleu
+  }
+
+  FastLED.show();  // Afficher l'état actuel des LEDs
+}
+
