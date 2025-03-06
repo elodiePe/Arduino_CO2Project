@@ -5,11 +5,6 @@
 #include <Wire.h>
 #include <Adafruit_SGP30.h>
 
-
-
-
-
-
 // définir le type de capteur DHT et la broche de données
 #define DHTPIN 12
 #define DHTTYPE DHT11
@@ -18,14 +13,37 @@
 DHT dht(DHTPIN, DHTTYPE);
 Adafruit_SGP30 sgp;
 
+// Pin du buzzer
+int buzzerPin = 10;
 
+// Notes musicales et durées des notes (en millisecondes)
+int melody[] = {
+  262, 294, 330, 349, 392, 440, 494, 523  // Do, Ré, Mi, Fa, Sol, La, Si, Do
+};
 
+int noteDuration = 500;
+
+// Variables pour la gestion du temps
+unsigned long previousMillis = 0;              // Temps de la dernière note jouée
+unsigned long previousMelodyMillis = 0;        // Temps de la dernière répétition de la mélodie
+const unsigned long interval = 180000;  // Intervalle de 3 minutes (en millisecondes)
+int noteIndex = 0;                             // Indice de la note en cours
+bool isPlaying = false;                        // Pour savoir si la mélodie est en cours de lecture
 
 // initialize the library by associating any needed LCD interface pin
 // with the Arduino pin number it is connected to
 const int rs = 44, en = 42, d4 = 46, d5 = 41, d6 = 45, d7 = 43;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-
+byte customChar[8] = {
+  B00100,
+  B00100,
+  B01110,
+  B10101,
+  B11111,
+  B00100,
+  B01010,
+  B10001
+};
 // pin for presence detector (PIR sensor)
 const int PIR_PIN = 38;
 int pirState = LOW;  // LOW means no motion detected
@@ -37,7 +55,7 @@ int lastButtonState = HIGH;
 int pressed = 0;  // Indicateur d'état d'affichage (0 pour Temp, 1 pour Humidité, 2 pour CO2/TVOC)
 const unsigned long DEBOUNCE_DELAY = 50;
 unsigned long lastDebounceTime = 0;
-// Définition des broches pour la matrice LED
+
 const int LEDARRAY_D = 2;
 const int LEDARRAY_C = 3;
 const int LEDARRAY_B = 4;
@@ -47,24 +65,9 @@ const int LEDARRAY_DI = 7;
 const int LEDARRAY_CLK = 8;
 const int LEDARRAY_LAT = 9;
 
-// Définition des constantes pour l'affichage
-const int DISPLAY_NUM_WORD = 2;
-const int NUM_OF_WORD = 2;
 unsigned char displayBuffer[8];
-unsigned char displaySwapBuffer[DISPLAY_NUM_WORD][32] = { 0 };
-bool shiftBit = 0;
-bool flagShift = 0;
-unsigned char timerCount = 0;
-unsigned char temp = 0x80;
-unsigned char shiftCount = 0;
-unsigned char displayWordCount = 0;
-bool smileyDisplayed = false;
-bool animationActive = false;
-bool animationComplete = false;
-
-// Définition du visage souriant
-const char happySmiley[2][32] = {
-  // hAPPY sMILEY
+// Déclaration du tableau avec le bon type
+const unsigned char happySmiley[2][32] = {
   0xF8,
   0xE0,
   0xC0,
@@ -99,64 +102,300 @@ const char happySmiley[2][32] = {
   0xFF,
 };
 
-// Pointeur vers le message actuel
-const char (*MESSAGE)[32];
+const unsigned char sunSmiley[2][32] = {
+  // SMILEY SUN
+  0xFF,
+  0xFF,
+  0x02,
+  0x80,
+  0x82,
+  0x87,
+  0xFF,
+  0xFF,
+  0x3F,
+  0xDF,
+  0xCF,
+  0xEF,
+  0xF0,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xFF,
+  0x07,
+  0x0F,
+  0x0F,
+  0x0F,
+  0xFF,
+  0xFF,
+  0xE7,
+  0xCF,
+  0x9F,
+  0xBF,
+  0x7F,
+  0xFF,
+  0xFF,
+  0xFF,
+};
 
-// Fonction pour changer l'affichage
-void changeDisplay(const char (*newMessage)[32]) {
-  MESSAGE = newMessage;
-  cleardisplay();
+const unsigned char coldSmiley[2][32] = {
+  // COLD SMILEY
+  0xFF,
+  0xFF,
+  0xE7,
+  0xDB,
+  0xFF,
+  0xE7,
+  0xE7,
+  0xFF,
+  0xFF,
+  0xC0,
+  0xD6,
+  0xDA,
+  0xC0,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xFF,
+  0xCF,
+  0xB7,
+  0xFF,
+  0xCF,
+  0xCF,
+  0xFF,
+  0xFF,
+  0x07,
+  0xD7,
+  0xB7,
+  0x07,
+  0xFF,
+  0xFF,
+  0xFF,
+};
+const unsigned char warning[2][32] = {
+  // WARNING SIGN
+  0xFF,
+  0xFE,
+  0xFD,
+  0xFB,
+  0xFA,
+  0xF6,
+  0xF6,
+  0xE6,
+  0xEE,
+  0xEF,
+  0xCE,
+  0xDE,
+  0x9F,
+  0xBF,
+  0x80,
+  0xFF,
+  0x7F,
+  0x3F,
+  0xDF,
+  0xEF,
+  0x2F,
+  0x37,
+  0x37,
+  0x33,
+  0x3B,
+  0xFB,
+  0x39,
+  0x3D,
+  0x03,
+  0x01,
+  0x00,
+  0xFF,
+};
+void setup() {
+  // Démarrer le capteur DHT
+  dht.begin();
+  // Set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  lcd.createChar(0, customChar);
+  // lcd.noDisplay();  // Ecran éteint au démarrage
+  // Message initial sur la ligne 2 (ligne 1 dans le code, car l'index commence à 0)
+  lcd.setCursor(0, 1);  // Place le curseur en bas
+  lcd.print("Animation demo");
+  // button
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  // PIR sensor (presence detector) setup
+  pinMode(PIR_PIN, INPUT);
+
+  // Démarrage du capteur SGP30
+  if (!sgp.begin()) {
+    Serial.println("Erreur : Le capteur SGP30 n'a pas pu être trouvé.");
+    while (1)
+      ;
+  }
+  Serial.println("Capteur SGP30 initialisé avec succès.");
+
+  // Démarrer la mesure d'air TVOC et eCO2
+  if (!sgp.IAQinit()) {
+    Serial.println("Erreur lors de l'initialisation IAQ.");
+  }
+  pinMode(LEDARRAY_D, OUTPUT);
+  pinMode(LEDARRAY_C, OUTPUT);
+  pinMode(LEDARRAY_B, OUTPUT);
+  pinMode(LEDARRAY_A, OUTPUT);
+  pinMode(LEDARRAY_G, OUTPUT);
+  pinMode(LEDARRAY_DI, OUTPUT);
+  pinMode(LEDARRAY_CLK, OUTPUT);
+  pinMode(LEDARRAY_LAT, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  tone(buzzerPin, melody[0], noteDuration);
+  display(happySmiley);  // Affiche directement le visage souriant
+
+  //  for (int i = 0; i < 16; i++) {
+  // lcd.clear();  // Efface l'écran pour créer l'illusion de mouvement
+  // lcd.setCursor(i, 0);  // Déplace le curseur à la position i (ligne 0)
+  // lcd.write(byte(0));  // Affiche le caractère personnalisé (petite voiture)
+  // lcd.setCursor(0, 1);  // Affiche le texte fixe sur la 2ème ligne
+  // lcd.print("Animation demo");
+  // delay(200);  // Pause entre chaque déplacement
 }
 
-// Fonction pour effacer l'affichage
-void cleardisplay() {
-  for (int j = 0; j < DISPLAY_NUM_WORD; j++) {
-    for (int i = 0; i < 32; i++) {
-      displaySwapBuffer[j][i] = 0xFF;
+void loop() {
+  // Récupère l'heure actuelle en millisecondes
+  unsigned long currentMillis = millis();
+
+
+  // Vérification du détecteur de présence (PIR)
+  int pirVal = digitalRead(PIR_PIN);
+
+  // Si le détecteur de présence est activé (quelqu'un est détecté)
+  if (pirVal == HIGH && pirState == LOW) {
+    pirState = HIGH;  // Met à jour l'état du PIR
+    lcd.display();    // Allume l'écran LCD
+    Serial.println("Présence détectée, écran allumé.");
+
+
+
+
+  } else if (pirVal == LOW && pirState == HIGH) {
+    pirState = LOW;   // Met à jour l'état du PIR
+    lcd.noDisplay();  // Éteint l'écran LCD
+
+    Serial.println("Pas de présence, écran éteint.");
+  };
+
+  // Vérification si le capteur SGP30 peut mesurer
+  if (!sgp.IAQmeasure()) {
+    Serial.println("Erreur lors de la mesure de la qualité de l'air.");
+    return;
+  };
+
+  // Gestion du bouton
+  int currentButtonState = digitalRead(BUTTON_PIN);
+
+  // On vérifie si le bouton a changé d’état
+  if (currentButtonState != lastButtonState) {
+    lastDebounceTime = millis();  // Reset du temps de debounce
+  }
+  // Lecture des valeurs du capteur
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+  // On vérifie si l'état du bouton est stable après le délai de debounce
+  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
+    // Si l'état a changé après le délai, on le prend en compte
+    if (currentButtonState != buttonState) {
+      buttonState = currentButtonState;
+
+      if (buttonState == LOW) {
+        pressed++;  // Passer à l'état suivant (0 -> 1 -> 2 -> 0)
+        if (pressed > 3) {
+          pressed = 0;  // Remettre à 0 après le troisième état
+        }
+
+        // changeDisplay(happySmiley);
+        Serial.println("🔘 Appuyé !");
+      }
     }
   }
+
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Erreur de lecture du capteur DHT");
+    return;
+  }
+
+  // Affichage en fonction de l'état de `pressed`
+  if (pressed == 0) {
+    // Affichage de la température
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Temperature: ");
+    lcd.setCursor(0, 1);
+    lcd.print(temperature);
+    lcd.print(" C");
+
+    if (sgp.eCO2 < 1000) {
+      if (temperature > 20) {
+        display(sunSmiley);
+      } else {
+        display(coldSmiley);
+      }
+    }
+  } else if (pressed == 1) {
+
+    // Affichage de l'humidité
+    lcd.setCursor(0, 0);
+    lcd.print("Humidite: ");
+    lcd.setCursor(0, 1);
+    lcd.print(humidity);
+    lcd.print(" %");
+  } else if (pressed == 2) {
+    // Affichage du CO2 et des COV (TVOC)
+    lcd.setCursor(0, 0);
+    lcd.print("CO2: ");
+    lcd.print(sgp.eCO2);
+    lcd.print(" ppm");
+    lcd.setCursor(0, 1);
+    lcd.print("TVOC: ");
+    lcd.print(sgp.TVOC);
+    lcd.print(" ppb");
+  } else if (pressed == 3) {
+    lcd.setCursor(0, 0);
+    lcd.clear();
+    lcd.print("heure et date");
+  }
+  if (sgp.eCO2 > 1000) {
+    display(warning);
+    // Si le temps écoulé depuis la dernière note est supérieur à la durée de la note actuelle
+    if (currentMillis - previousMelodyMillis >= interval && !isPlaying) {
+      // Si l'intervalle est atteint, commence à jouer la mélodie
+      previousMelodyMillis = currentMillis;  // Réinitialise le compteur pour 5 minutes
+      isPlaying = true;                      // Indique que la mélodie est en cours de lecture
+      noteIndex = 0;                         // Réinitialise l'indice de la mélodie
+    }
+
+    // Si la mélodie est en train de jouer, on vérifie si la prochaine note doit être jouée
+    if (isPlaying) {
+      // Si le temps écoulé depuis la dernière note est supérieur à la durée de la note actuelle
+      if (currentMillis - previousMillis >= noteDuration) {
+        // Met à jour le temps de référence pour la prochaine note
+        previousMillis = currentMillis;
+
+        // Arrête de jouer la note précédente
+        noTone(buzzerPin);
+
+        // Joue la prochaine note si on n'est pas à la fin de la mélodie
+        if (noteIndex < 8) {
+          tone(buzzerPin, melody[noteIndex], noteDuration);
+          noteIndex++;  // Passe à la note suivante
+        } else {
+          // Si la mélodie est terminée, on arrête de jouer
+          isPlaying = false;
+        }
+      }
+    }
+  }
+
+  // Mise à jour de l'état précédent du bouton
+  lastButtonState = currentButtonState;
 }
 
-// Fonction pour calculer le défilement
-void calcShift() {
-  unsigned char i;
-  for (i = 0; i < 16; i++) {
-    if ((displaySwapBuffer[0][16 + i] & 0x80) == 0) {
-      displaySwapBuffer[0][i] = (displaySwapBuffer[0][i] << 1) & 0xfe;
-    } else {
-      displaySwapBuffer[0][i] = (displaySwapBuffer[0][i] << 1) | 0x01;
-    }
-    if ((displaySwapBuffer[1][i] & 0x80) == 0) {
-      displaySwapBuffer[0][16 + i] = (displaySwapBuffer[0][16 + i] << 1) & 0xfe;
-    } else {
-      displaySwapBuffer[0][16 + i] = (displaySwapBuffer[0][16 + i] << 1) | 0x01;
-    }
-    if ((displaySwapBuffer[1][16 + i] & 0x80) == 0) {
-      displaySwapBuffer[1][i] = (displaySwapBuffer[1][i] << 1) & 0xfe;
-    } else {
-      displaySwapBuffer[1][i] = (displaySwapBuffer[1][i] << 1) | 0x01;
-    }
-    if (shiftCount % 16 < 8 && displayWordCount < NUM_OF_WORD) {
-      shiftBit = MESSAGE[displayWordCount][i] & temp;
-    } else if (shiftCount % 16 < 16 && displayWordCount < NUM_OF_WORD) {
-      shiftBit = MESSAGE[displayWordCount][16 + i] & temp;
-    } else {
-      shiftBit = 1;
-    }
-    if (shiftBit == 0) {
-      displaySwapBuffer[1][16 + i] = (displaySwapBuffer[1][16 + i] << 1) & 0xfe;
-    } else {
-      shiftBit = 1;
-      displaySwapBuffer[1][16 + i] = (displaySwapBuffer[1][16 + i] << 1) | 0x01;
-    }
-  }
-  temp = (temp >> 1) & 0x7f;
-  if (temp == 0x00) {
-    temp = 0x80;
-  }
-}
-
-// Fonction pour scanner les lignes
 void scanLine(unsigned char m) {
   switch (m) {
     case 0:
@@ -260,7 +499,6 @@ void scanLine(unsigned char m) {
   }
 }
 
-// Fonction pour envoyer des données
 void send(unsigned char dat) {
   unsigned char i;
   digitalWrite(LEDARRAY_CLK, LOW);
@@ -282,7 +520,6 @@ void send(unsigned char dat) {
   }
 }
 
-// Fonction pour afficher la matrice
 void display(const unsigned char dat[][32]) {
   unsigned char i;
 
@@ -322,159 +559,3 @@ void display(const unsigned char dat[][32]) {
     delayMicroseconds(300);
   }
 }
-void resetSmileyDisplay() {
-  smileyDisplayed = false;
-  shiftCount = 0;
-}
-void setup() {
-
-
-
-  // Démarrer le capteur DHT
-  dht.begin();
-  // Set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
-  lcd.print("Temp: ");
-  lcd.noDisplay();  // Ecran éteint au démarrage
-
-  // button
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-
-  // PIR sensor (presence detector) setup
-  pinMode(PIR_PIN, INPUT);
-
-  // Démarrage du capteur SGP30
-  if (!sgp.begin()) {
-    Serial.println("Erreur : Le capteur SGP30 n'a pas pu être trouvé.");
-    while (1)
-      ;
-  }
-  Serial.println("Capteur SGP30 initialisé avec succès.");
-
-  // Démarrer la mesure d'air TVOC et eCO2
-  if (!sgp.IAQinit()) {
-    Serial.println("Erreur lors de l'initialisation IAQ.");
-  }
-
-  pinMode(LEDARRAY_D, OUTPUT);
-  pinMode(LEDARRAY_C, OUTPUT);
-  pinMode(LEDARRAY_B, OUTPUT);
-  pinMode(LEDARRAY_A, OUTPUT);
-  pinMode(LEDARRAY_G, OUTPUT);
-  pinMode(LEDARRAY_DI, OUTPUT);
-  pinMode(LEDARRAY_CLK, OUTPUT);
-  pinMode(LEDARRAY_LAT, OUTPUT);
-
-  // Initialisation de la matrice
-  changeDisplay(happySmiley);
-  cleardisplay();
-}
-
-void loop() {
-  // Vérification du détecteur de présence (PIR)
-  int pirVal = digitalRead(PIR_PIN);
-
-// Si le détecteur de présence est activé (quelqu'un est détecté)
-if (pirVal == HIGH && pirState == LOW) {
-    pirState = HIGH;  // Met à jour l'état du PIR
-    lcd.display();    // Allume l'écran LCD
-    Serial.println("Présence détectée, écran allumé.");
-   
-    
-} else if (pirVal == LOW && pirState == HIGH) {
-    pirState = LOW;   // Met à jour l'état du PIR
-    lcd.noDisplay();  // Éteint l'écran LCD
-    cleardisplay();
-    Serial.println("Pas de présence, écran éteint.");
-}
-
-  // Vérification si le capteur SGP30 peut mesurer
-  if (!sgp.IAQmeasure()) {
-    Serial.println("Erreur lors de la mesure de la qualité de l'air.");
-    return;
-  }
-
-  // Gestion du bouton
-  int currentButtonState = digitalRead(BUTTON_PIN);
-
-  // On vérifie si le bouton a changé d’état
-  if (currentButtonState != lastButtonState) {
-    lastDebounceTime = millis();  // Reset du temps de debounce
-  }
-  // Lecture des valeurs du capteur
-  float humidity = dht.readHumidity();
-  float temperature = dht.readTemperature();
-  // On vérifie si l'état du bouton est stable après le délai de debounce
-  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) {
-    // Si l'état a changé après le délai, on le prend en compte
-    if (currentButtonState != buttonState) {
-      buttonState = currentButtonState;
-
-      if (buttonState == LOW) {
-        pressed++;  // Passer à l'état suivant (0 -> 1 -> 2 -> 0)
-        if (pressed > 4) {
-          pressed = 0;  // Remettre à 0 après le troisième état
-        }
-        if (pressed == 4) {
-          resetSmileyDisplay();
-        }
-        lcd.clear();  // Effacer l'écran LCD pour afficher les nouvelles données
-        // changeDisplay(happySmiley);
-        Serial.println("🔘 Appuyé !");
-      }
-    }
-  }
-
-
-
-  if (isnan(humidity) || isnan(temperature)) {
-    Serial.println("Erreur de lecture du capteur DHT");
-    return;
-  }
-
-  // Affichage en fonction de l'état de `pressed`
-  if (pressed == 0) {
-    // Affichage de la température
-    lcd.setCursor(0, 0);
-    lcd.print("Temperature: ");
-    lcd.setCursor(0, 1);
-    lcd.print(temperature);
-    lcd.print(" C");
-  } else if (pressed == 1) {
-    // Affichage de l'humidité
-    lcd.setCursor(0, 0);
-    lcd.print("Humidite: ");
-    lcd.setCursor(0, 1);
-    lcd.print(humidity);
-    lcd.print(" %");
-  } else if (pressed == 2) {
-    // Affichage du CO2 et des COV (TVOC)
-    lcd.setCursor(0, 0);
-    lcd.print("CO2: ");
-    lcd.print(sgp.eCO2);
-    lcd.print(" ppm");
-
-    lcd.setCursor(0, 1);
-    lcd.print("TVOC: ");
-    lcd.print(sgp.TVOC);
-    lcd.print(" ppb");
-  } else if (pressed == 3){
-    lcd.setCursor (0,0);
-    lcd.print("heure et date");
-  
-  } else if (pressed == 4 && !smileyDisplayed) {
-    for (int i = 0; i < 30; i++) {
-      display(displaySwapBuffer);
-    }
-    displayWordCount = shiftCount / 16;
-    calcShift();
-    shiftCount++;
-    if (shiftCount == (NUM_OF_WORD + DISPLAY_NUM_WORD) * 16) {
-      smileyDisplayed = true;
-      cleardisplay();
-    }
-  }
-  // Mise à jour de l'état précédent du bouton
-  lastButtonState = currentButtonState;
-}
-
