@@ -125,7 +125,7 @@ void loop() {
       if (buttonState == LOW) {
         pressed++;  // Passer à l'état suivant (0 -> 1 -> 2 -> 0)
         lcd.clear();
-        if (pressed > 3) {
+        if (pressed > 2) {
           pressed = 0;  // Remettre à 0 après le troisième état
         }
         Serial.println("🔘 Appuyé !");
@@ -143,13 +143,13 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print(temperature);
     lcd.print(" C");
-    if (temperature < 10 && sgp.eCO2 < 400) {
+    if (temperature < 10 && sgp.eCO2 < 1000) {
       drawSadSmiley();
     };
-    if (temperature < 20 && temperature > 10 && sgp.eCO2 < 400) {
+    if (temperature < 20 && temperature > 10 && sgp.eCO2 < 1000) {
       drawNeutralSmiley();
     }
-    if (temperature > 20 && sgp.eCO2 < 400) {
+    if (temperature > 20 && sgp.eCO2 < 1000) {
       drawHappySmiley();
     }
     if (temperature == 20) {
@@ -162,7 +162,7 @@ void loop() {
     lcd.setCursor(0, 1);
     lcd.print(humidity);
     lcd.print(" %");
-    if (sgp.eCO2 < 400) {
+    if (sgp.eCO2 < 1000) {
   drawHumidityDisplay(humidity); // Afficher l'humidité sur le panneau LED
 
     }
@@ -175,14 +175,15 @@ void loop() {
     lcd.print("TVOC: ");
     lcd.print(sgp.TVOC);
     lcd.print(" ppb");
+    if (sgp.eCO2 > 1000){
     drawWarningSign();
+    } else {
+      drawHappySmiley();
+    }
 
-  } else if (pressed == 3 && pirVal == HIGH) {
-    lcd.setCursor(0, 0);
-    lcd.clear();
-    lcd.print("heure et date");
-  }
-  if (sgp.eCO2 > 400) {
+
+  } 
+  if (sgp.eCO2 > 1000) {
     drawWarningSign();
     // Si le temps écoulé depuis la dernière note est supérieur à la durée de la note actuelle
     if (currentMillis - previousMelodyMillis >= interval && !isPlaying) {
@@ -213,7 +214,7 @@ void loop() {
       }
     }
   }
-  if (pirVal == LOW && sgp.eCO2 <400) {
+  if (pirVal == LOW && sgp.eCO2 <1000) {
     turnOffLeds();
   }
   lastButtonState = currentButtonState;
