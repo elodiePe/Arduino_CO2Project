@@ -1,4 +1,4 @@
-# Template Projet Arduino
+# GameAir
 
 ![Description de l'image](/docs/assets/photo-de-mon-projet.png)
 
