@@ -10,11 +10,11 @@ Dans les salles de classe, il fait souvent chaud et elles manquent d'aération, 
 Pour rendre le dispositif à la fois ludique et attrayant, je me suis inspirée du design des Game Boys et des anciennes consoles de jeux vidéo. Le projet, baptisé GameAir, propose plusieurs fonctionnalités afin d’offrir une expérience complète et utile :
 
 - **Affichage de la température sur un écran LCD** : En fonction de la température (chaud, froid ou tempéré), un smiley correspondant apparaît sur la matrice de LED RGB.
-![Description de l'image](assets/temperatureProjet.jpg)
-- **Affichage du taux d'humidité** : plus le taux d'humidité est élevé, plus les LEDs s'allument sur la matrice pour une représentation visuelle immédiate.![Description de l'image](assets/humidityProjet.jpg)
+<img src="assets/temperatureProjet.jpg"  height="500">
+- **Affichage du taux d'humidité** : plus le taux d'humidité est élevé, plus les LEDs s'allument sur la matrice pour une représentation visuelle immédiate.!
+<img src="assets/humidityProjet.jpg"  height="500">
 - **Affichage du niveau de CO2** : lorsque le taux de CO2 dépasse 1000 ppm (sur la photo et la video la limite est à 400), un symbole d'alerte apparaît sur la matrice de LED, et un buzzer retentit toutes les 3 minutes tant que la concentration reste trop élevée. [Voir la video](video_projet.mp4)
-![Description de l'image](assets/warning_projet.jpg)
-
+<img src="assets/warning_projet.jpg"  height="500">
 - **Détecteur de mouvement intégré** : si aucune présence n'est détectée, les écrans restent éteints. En revanche, dès qu'une personne est présente, les écrans s'allument automatiquement.
 
 ### Mes prototypes
@@ -39,6 +39,9 @@ Lors de ce projet, j'ai utilisé plusieurs composants et principalement des capt
 
 ![Description de l'image](/docs/assets/schematics_bb.png)
 
+
+
+
 ### BOM
 
 |  | Composant      | Quantité | Description                            | Fournisseur / Lien                                            |
@@ -51,7 +54,7 @@ Lors de ce projet, j'ai utilisé plusieurs composants et principalement des capt
 | 6   | Détecteur de mouvements  | 1        | Module détecteur de mouvement PIR Purecrea HC-SR501 | [Digitec](https://www.digitec.ch/de/s1/product/purecrea-hc-sr501-pir-bewegungsmelder-modul-entwicklungsboard-kit-39552366?supplier=8244233&utm_source=google&utm_medium=cpc&utm_campaign=PROD_CH_PMAX_M5_C3&campaignid=21028347594&adgroupid=&adid=&dgCidg=CjwKCAiArKW-BhAzEiwAZhWsIGnYhyyxEVa03YQIxCNnsmhPyDDtMKoK9i62ruziyytVX3uguEP6cBoCWDkQAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIGnYhyyxEVa03YQIxCNnsmhPyDDtMKoK9i62ruziyytVX3uguEP6cBoCWDkQAvD_BwE&gclsrc=aw.ds) 
 | 7   | Gas Sensor SGP30  | 1        | Gaz, humidité, qualité de l'air intérieur (QAI) | [DigiKey](https://www.digikey.ch/de/products/detail/adafruit-industries-llc/3709/8258468?gclsrc=aw.ds&&utm_adgroup=&utm_source=google&utm_medium=cpc&utm_campaign=PMax%20Shopping_Product_Medium%20ROAS&utm_term=&productid=8258468&utm_content=&utm_id=go_cmp-20185743540_adg-_ad-__dev-c_ext-_prd-8258468_sig-CjwKCAiArKW-BhAzEiwAZhWsIDwvwmuVHudxKjVun_it0hJDGl3P9dqkGIU85tK9ymZ3MORhnfWHUBoCiAwQAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIDwvwmuVHudxKjVun_it0hJDGl3P9dqkGIU85tK9ymZ3MORhnfWHUBoCiAwQAvD_BwE&gclsrc=aw.ds)  
 | 8   | Temperature and humidity sensor  | 1        | DHT11 Temperature and Humidity Sensor  | [DFrobot](https://wiki.dfrobot.com/DHT11_Temperature_and_Humidity_Sensor__SKU__DFR0067_) 
-| 9   | TBouton  | 1        | Bouton  | [Digitec](https://www.digitec.ch/de/s1/product/purecrea-taster-button-set-25-stueck-diverse-farben-taster-schalter-39044933?supplier=8244233&utm_source=google&utm_medium=cpc&utm_campaign=PROD_CH_PMAX_M8_C2&campaignid=20573313541&adgroupid=&adid=&dgCidg=CjwKCAiArKW-BhAzEiwAZhWsIP3oUBSCLJejSXYRIfIWVGLrj-1g_8YoNgswReosx25sEoReqgX24RoCiDYQAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIP3oUBSCLJejSXYRIfIWVGLrj-1g_8YoNgswReosx25sEoReqgX24RoCiDYQAvD_BwE&gclsrc=aw.ds)   
+| 9   | Bouton  | 1        | Bouton  | [Digitec](https://www.digitec.ch/de/s1/product/purecrea-taster-button-set-25-stueck-diverse-farben-taster-schalter-39044933?supplier=8244233&utm_source=google&utm_medium=cpc&utm_campaign=PROD_CH_PMAX_M8_C2&campaignid=20573313541&adgroupid=&adid=&dgCidg=CjwKCAiArKW-BhAzEiwAZhWsIP3oUBSCLJejSXYRIfIWVGLrj-1g_8YoNgswReosx25sEoReqgX24RoCiDYQAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIP3oUBSCLJejSXYRIfIWVGLrj-1g_8YoNgswReosx25sEoReqgX24RoCiDYQAvD_BwE&gclsrc=aw.ds)   
 | 10   | Resitance  | 2        | Résitances  | [DFrobot](https://www.digitec.ch/de/s1/product/kemo-widerstands-set-widerstand-21606532?supplier=8902998&utm_source=google&utm_medium=cpc&utm_campaign=PROD_CH_PMAX_M7_C3&campaignid=21035137829&adgroupid=&adid=&dgCidg=CjwKCAiArKW-BhAzEiwAZhWsIKcbYjfA3OyaWwjOD4VI8b8xrBx978schU2VPuRLQ12B1Mq9LNfb9BoCoZ8QAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIKcbYjfA3OyaWwjOD4VI8b8xrBx978schU2VPuRLQ12B1Mq9LNfb9BoCoZ8QAvD_BwE&gclsrc=aw.ds)    
 | 11   | Potentiomètre  | 1        | Potentiomètre  | [Digitec](https://www.digitec.ch/de/s1/product/purecrea-10k-ohm-linear-drehpotentiometer-3386p-1-103-potentiometer-passive-bauelemente-36225564?supplier=8244233&utm_source=google&utm_medium=cpc&utm_campaign=PROD_CH_PMAX_M3_C3&campaignid=21028153113&adgroupid=&adid=&dgCidg=CjwKCAiArKW-BhAzEiwAZhWsIIbTKjDeSVM4sTbrzXFLuUiracUvi6idL3fI5uOMU0PZ1lLEY_pA7xoCDTAQAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIIbTKjDeSVM4sTbrzXFLuUiracUvi6idL3fI5uOMU0PZ1lLEY_pA7xoCDTAQAvD_BwE&gclsrc=aw.ds)                                                                             
 
