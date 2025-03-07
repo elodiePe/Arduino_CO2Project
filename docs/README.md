@@ -10,21 +10,27 @@ Dans les salles de classe, il fait souvent chaud et elles manquent d'aération, 
 Pour rendre le dispositif à la fois ludique et attrayant, je me suis inspirée du design des Game Boys et des anciennes consoles de jeux vidéo. Le projet, baptisé GameAir, propose plusieurs fonctionnalités afin d’offrir une expérience complète et utile :
 
 - **Affichage de la température sur un écran LCD** : En fonction de la température (chaud, froid ou tempéré), un smiley correspondant apparaît sur la matrice de LED RGB.
-- **Affichage du taux d'humidité** : plus le taux d'humidité est élevé, plus les LEDs s'allument sur la matrice pour une représentation visuelle immédiate.
-- **Affichage du niveau de CO2** : lorsque le taux de CO2 dépasse 1000 ppm, un symbole d'alerte apparaît sur la matrice de LED, et un buzzer retentit toutes les 3 minutes tant que la concentration reste trop élevée.
+![Description de l'image](assets/temperatureProjet.jpg)
+- **Affichage du taux d'humidité** : plus le taux d'humidité est élevé, plus les LEDs s'allument sur la matrice pour une représentation visuelle immédiate.![Description de l'image](assets/humidityProjet.jpg)
+- **Affichage du niveau de CO2** : lorsque le taux de CO2 dépasse 1000 ppm (sur la photo et la video la limite est à 400), un symbole d'alerte apparaît sur la matrice de LED, et un buzzer retentit toutes les 3 minutes tant que la concentration reste trop élevée. [Voir la video](video_projet.mp4)
+![Description de l'image](assets/warning_projet.jpg)
+
 - **Détecteur de mouvement intégré** : si aucune présence n'est détectée, les écrans restent éteints. En revanche, dès qu'une personne est présente, les écrans s'allument automatiquement.
 
-![Description de l'image](assets/prototype1.jpg)
-![Description de l'image](assets/prototype2.png)
+### Mes prototypes
+
+<img src="assets/prototype1.jpg"  height="200">
+
+<img src="assets/prototype2.png"  height="200">
+<br>
 
 ## Circuit électronique
 
-Lors de ce projet, j'ai utilisé plusiers composants et principalement des capteurs : 
+Lors de ce projet, j'ai utilisé plusieurs composants et principalement des capteurs : 
 - **Matrice de LED** : J'ai commencé par utiliser [une matrice LED rouge 16x16](matriceLed.md), mais comme le rendu n'étais pas convainquant, j'ai décidé de changer de matrice et d'utiliser la [8X8 matrice RGB de Purecrea](https://download.bastelgarage.ch/Datasheet/WS2812_Datasheet.pdf). Cette matrice est beaucoup plus simple à utiliser notamement grâce aux librairies déjà existantes.
 - **Ecran LCD** : Grâce à la librairie déjà existante, cet écran est simple à utiliser. [Lien vers la datasheet](https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf)
 - **Buzzer Piezo**
 - **Capteur de mouvement** : J'ai utilisé le [PIR HC-SR501](motion.md)
-
 - **Capteur de C02** : J'ai utiliser le [SGP30](co2.md)
 - **Capteur de température & de l'humidité** : J'ai utilisé le [DHT11 temperature and humidity sensor](temp.md)
 
@@ -35,7 +41,7 @@ Lors de ce projet, j'ai utilisé plusiers composants et principalement des capte
 
 ### BOM
 
-| Réf | Composant      | Quantité | Description                            | Fournisseur / Lien                                            |
+|  | Composant      | Quantité | Description                            | Fournisseur / Lien                                            |
 | --- | -------------- | -------- | -------------------------------------- | ------------------------------------------------------------- |
 | 1   | arduino mega 2560 | 1        | microcontroller  ATmega2560             | [Arduino](https://store.arduino.cc/products/arduino-mega-2560-rev3?srsltid=AfmBOooEsDgttlmfXt6TIMQEybFGjIAtUWPdZocjrgAigUoTtlJHSqeI) |
 | 2   | Breadboard     | 2        | Plaque de prototypage                  | [Digitec](https://www.digitec.ch/en/s1/product/velleman-high-quality-plug-in-board-electronics-supplies-casing-6337139?dbq=1&supplier=406802&utm_source=google&utm_medium=cpc&utm_campaign=PROD_CH_PMAX_M10_C3&campaignid=20563498272&adgroupid=&adid=&dgCidg=CjwKCAiArKW-BhAzEiwAZhWsIAaCYQ7k-989yrUsFd2PH1lfrgHd4hD-W7QYMFoHrthBcY65C-JNjBoCgeUQAvD_BwE&gad_source=1&gclid=CjwKCAiArKW-BhAzEiwAZhWsIAaCYQ7k-989yrUsFd2PH1lfrgHd4hD-W7QYMFoHrthBcY65C-JNjBoCgeUQAvD_BwE&gclsrc=aw.ds)                                                     |

@@ -1,6 +1,6 @@
 # Temperature et humidité
 - [Lien vers la documentation](https://projecthub.arduino.cc/rudraksh2008/temperature-and-humidity-sensor-with-arduino-1d52a6)
-## exemple de code
+## Exemple de code
 ```c++
 // Inclure les bibliothèques DHT et Adafruit Unified Sensor
 

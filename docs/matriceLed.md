@@ -1,6 +1,6 @@
 # Matrice LED 16x16
 [Cette matrice](https://www.wiltronics.com.au/product/19744/dot-matrix-16x16-red-led-display-module-arduino-compatible/) de 16x16 (leds rouges) a très peu de documentation en ligne.
-## Example de code pour afficher des smileys
+## Exemple de code pour afficher des smileys
 ```C++
 // Définition des broches pour le contrôle des LED
 const int LEDARRAY_D = 2;

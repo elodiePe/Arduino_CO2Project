@@ -1,9 +1,7 @@
 
 # Capteur de présence
-
-
 https://www.moussasoft.com/capteur-de-mouvement-pir-hc-sr501/
-
+## Exemple de code
 ```c++
 // Define the pins
 
@@ -23,7 +21,7 @@ if (sensorValue == HIGH){
   digitalWrite(ledPin, HIGH);
   delay(1000);
 } else {
-    Serial.println("Etaint");
+    Serial.println("Eteint");
   digitalWrite(ledPin, LOW);
 }
 }
