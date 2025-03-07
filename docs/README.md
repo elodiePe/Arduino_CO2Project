@@ -19,7 +19,15 @@ Pour rendre le dispositif à la fois ludique et attrayant, je me suis inspirée 
 
 ## Circuit électronique
 
-`Quelques notes sur des composants particuliers de mon projet, des liens vers des datasheets, etc.`
+Lors de ce projet, j'ai utilisé plusiers composants et principalement des capteurs : 
+- **Matrice de LED** : J'ai commencé par utiliser [une matrice LED rouge 16x16](matriceLed.md), mais comme le rendu n'étais pas convainquant, j'ai décidé de changer de matrice et d'utiliser la [8X8 matrice RGB de Purecrea](https://download.bastelgarage.ch/Datasheet/WS2812_Datasheet.pdf). Cette matrice est beaucoup plus simple à utiliser notamement grâce aux librairies déjà existantes.
+- **Ecran LCD** : Grâce à la librairie déjà existante, cet écran est simple à utiliser. [Lien vers la datasheet](https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf)
+- **Buzzer Piezo**
+- **Capteur de mouvement** : J'ai utilisé le [PIR HC-SR501](motion.md)
+
+- **Capteur de C02** : J'ai utiliser le [SGP30](co2.md)
+- **Capteur de température & de l'humidité** : J'ai utilisé le [DHT11 temperature and humidity sensor](temp.md)
+
 
 ### Schéma
 
@@ -46,4 +54,4 @@ Dans ce projet, j'ai utilisé plusieurs librairies pour optimiser les fonctionna
 Pour éviter les rebonds du bouton et permettre au code de gérer plusieurs tâches en parallèle, j'ai utilisé la fonction millis(), ce qui permet de ne pas interrompre le fonctionnement du programme.
 
 ## Roadmap
- y a encore plusieurs points à améliorer dans le projet. Par exemple, le buzzer ne peut pas être arrêté une fois activé, ce qui pourrait rapidement devenir agaçant. De plus, les visuels affichés sur la matrice de LED sont pour l'instant très statiques. Pour rendre l'appareil plus interactif et attractif, il serait intéressant de rendre ces visuels animés ou de les rendre plus dynamiques et détaillés, en intégrant par exemple des transitions ou des animations plus sophistiquées.
+Il y a encore plusieurs points à améliorer dans le projet. Par exemple, le buzzer ne peut pas être arrêté une fois activé, ce qui pourrait rapidement devenir agaçant. De plus, les visuels affichés sur la matrice de LED sont pour l'instant très statiques. Pour rendre l'appareil plus interactif et attractif, il serait intéressant de rendre ces visuels animés ou de les rendre plus dynamiques et détaillés, en intégrant par exemple des transitions ou des animations plus sophistiquées.
